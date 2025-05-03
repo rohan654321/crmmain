@@ -3,12 +3,26 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    // Use select instead of include to have more control over the query
     const departments = await prisma.department.findMany({
-      include: {
-        target: true,
+      select: {
+        id: true,
+        name: true,
+        target: {
+          select: {
+            amount: true,
+          },
+        },
         employees: {
-          include: {
-            leads: true,
+          select: {
+            id: true,
+            name: true, // Assuming employee has a name field
+            leads: {
+              select: {
+                id: true,
+                status: true,
+              },
+            },
           },
         },
       },
