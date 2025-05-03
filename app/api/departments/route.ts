@@ -1,5 +1,5 @@
+import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
-import {prisma} from "@/app/lib/prisma";
 
 export async function GET() {
   try {
@@ -8,7 +8,7 @@ export async function GET() {
         target: true,
         employees: {
           include: {
-            leads: true, // include leads for each employee
+            leads: true,
           },
         },
       },
@@ -17,19 +17,23 @@ export async function GET() {
     const formattedDepartments = departments.map((dept) => ({
       id: dept.id,
       name: dept.name,
-      target: dept.target ? dept.target.amount : null,
-      totalLeads: dept.employees.reduce((sum, emp) => sum + emp.leads.length, 0),
-      soldLeads: dept.employees.reduce(
-        (sum, emp) =>
-          sum + emp.leads.filter((lead) => lead.status.toUpperCase() === "SOLD").length,
+      target: dept.target?.amount ?? 0,
+      totalLeads: (dept.employees ?? []).reduce(
+        (sum, emp) => sum + (emp.leads?.length ?? 0),
         0
       ),
-      employees: dept.employees, // Pass along the employees array
+      soldLeads: (dept.employees ?? []).reduce(
+        (sum, emp) =>
+          sum + (emp.leads?.filter((lead) => lead.status?.toUpperCase() === "SOLD").length ?? 0),
+        0
+      ),
+      employees: dept.employees ?? [],
     }));
 
     return NextResponse.json(formattedDepartments, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching departments:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error("Error fetching departments:", error?.message ?? error);
+    return NextResponse.json({ error: error?.message ?? "Internal Server Error" }, { status: 500 });
   }
 }

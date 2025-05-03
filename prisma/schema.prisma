@@ -43,7 +43,7 @@ model Lead {
   name         String
   email        String
   company      String
-  phone        String
+  phone        String?
   city         String
   designaction String?
   message      String
